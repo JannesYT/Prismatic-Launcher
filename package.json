@@ -1,0 +1,96 @@
+{
+  "name": "prismatic-launcher",
+  "version": "0.2.0",
+  "description": "A Minecraft launcher with a Liquid Glass interface",
+  "main": "./out/main/index.mjs",
+  "type": "module",
+  "author": "Jannes",
+  "license": "GPL-3.0",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "dev:ui": "vite --config vite.ui.config.ts",
+    "build": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json && electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "start": "electron-vite preview",
+    "pack:win": "npm run build && electron-builder --win",
+    "pack:msi": "npm run build && electron-builder --win msi",
+    "pack:nsis": "npm run build && electron-builder --win nsis",
+    "pack:portable": "npm run build && electron-builder --win portable",
+    "pack:mac": "npm run build && electron-builder --mac",
+    "pack:linux": "npm run build && electron-builder --linux"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.1"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "framer-motion": "^11.15.0",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vite": "^7.1.0",
+    "zustand": "^5.0.2"
+  },
+  "build": {
+    "appId": "dev.jannes.prismatic",
+    "productName": "Prismatic",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "msi",
+        "nsis"
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "msi": {
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Prismatic",
+      "runAfterFinish": true,
+      "perMachine": false,
+      "oneClick": false
+    },
+    "nsis": {
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Prismatic",
+      "runAfterFinish": true,
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.games"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Game"
+    }
+  },
+  "allowScripts": {
+    "electron@44.4.3": true
+  }
+}

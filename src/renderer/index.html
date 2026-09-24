@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Prismatic</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      A strict CSP: no inline scripts, no eval. Remote images are allowed because
+      mod and avatar icons come from Modrinth, CurseForge and Crafatar.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: prismatic-file:; font-src 'self' data:; connect-src 'self' https: ws: wss:"
+    />
+    <style>
+      /* One utility that has to exist before the stylesheet loads, so the
+         loading spinner in App.tsx animates on the very first frame. */
+      .spin {
+        animation: spin 900ms linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

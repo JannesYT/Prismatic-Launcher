@@ -1,0 +1,438 @@
+/* ===========================================================================
+   Layout modes.
+
+   One shell, four shapes. Each mode only moves the navigation and retunes
+   spacing — no view knows which layout it is in, so a new layout needs no
+   changes to any screen.
+   =========================================================================== */
+
+:root {
+  --rail-w: 210px;
+  --card-w: 168px;
+}
+
+/* --- Wallpaper ------------------------------------------------------------
+   Sits above the gradient field and below every glass surface, so a chosen
+   image is what the material refracts. */
+.app-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--bg-image, none);
+  background-size: cover;
+  background-position: center;
+  opacity: var(--bg-image-opacity, 0.4);
+  filter: blur(var(--bg-image-blur, 20px));
+  /* Overscan, so blurring does not reveal soft edges at the window border. */
+  transform: scale(1.1);
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+/* --- Density -------------------------------------------------------------- */
+
+:root[data-density='compact'] {
+  --sp-3: 9px;
+  --sp-4: 12px;
+  --sp-5: 16px;
+  --sp-6: 22px;
+  --titlebar-h: 38px;
+}
+
+:root[data-density='compact'] .row {
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+}
+
+:root[data-density='compact'] .view__title {
+  font-size: 24px;
+}
+
+/* ===========================================================================
+   Floating (default): content edge to edge, glass bar hovering at the bottom
+   =========================================================================== */
+
+:root[data-layout='bottomTabs'] .app {
+  grid-template-rows: var(--titlebar-h) 1fr;
+  grid-template-columns: 1fr;
+}
+
+/* ===========================================================================
+   Sidebar: a fixed rail on the left, the way the official launcher does it
+   =========================================================================== */
+
+:root[data-layout='sidebar'] .app,
+:root[data-layout='compact'] .app {
+  grid-template-rows: var(--titlebar-h) 1fr;
+  grid-template-columns: var(--rail-w) 1fr;
+  grid-template-areas:
+    'titlebar titlebar'
+    'rail     main';
+}
+
+/* The compact rail's width is set from JS alongside the other layout values;
+   see applyAppearance. Overriding --rail-w here would have no effect, because
+   that one is written as an inline style. */
+
+:root[data-layout='sidebar'] .titlebar,
+:root[data-layout='compact'] .titlebar,
+:root[data-layout='topTabs'] .titlebar {
+  grid-area: titlebar;
+}
+
+:root[data-layout='sidebar'] .main,
+:root[data-layout='compact'] .main {
+  grid-area: main;
+}
+
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.rail__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 10px var(--sp-3);
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: 560;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  position: relative;
+  white-space: nowrap;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.rail__item:hover {
+  background: var(--fill);
+  color: var(--ink);
+}
+
+.rail__item[data-active='true'] {
+  color: var(--ink);
+  font-weight: 640;
+}
+
+/* The moving highlight, shared with the tab bar via framer-motion's layoutId. */
+.rail__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  background: var(--fill-active);
+  z-index: -1;
+}
+
+:root[data-glass='liquid'] .rail__pill {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.rail__badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 10px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+/* Compact rail: icons only, label hidden but still read by screen readers. */
+:root[data-layout='compact'] .rail__item {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+:root[data-layout='compact'] .rail__label,
+:root[data-layout='compact'] .rail__badge {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+:root[data-layout='compact'] .rail__badge {
+  clip-path: none;
+  position: absolute;
+  width: auto;
+  height: 16px;
+  top: 4px;
+  right: 8px;
+  margin-left: 0;
+}
+
+/* ===========================================================================
+   Top tabs: a classic desktop shape
+   =========================================================================== */
+
+:root[data-layout='topTabs'] .app {
+  grid-template-rows: var(--titlebar-h) auto 1fr;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'titlebar'
+    'rail'
+    'main';
+}
+
+:root[data-layout='topTabs'] .rail {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-4) var(--sp-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: inset 0 -1px 0 var(--line);
+}
+
+:root[data-layout='topTabs'] .rail__item {
+  width: auto;
+  padding: 8px var(--sp-4);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+
+:root[data-layout='topTabs'] .rail__badge {
+  margin-left: 4px;
+}
+
+/* ===========================================================================
+   Scroll padding: only the floating layout has a bar overlapping content
+   =========================================================================== */
+
+:root:not([data-layout='bottomTabs']) .scroller {
+  padding-bottom: var(--sp-5);
+}
+
+:root:not([data-layout='bottomTabs']) .scroll-edge--bottom {
+  display: none;
+}
+
+/* ===========================================================================
+   Instance list density and shape
+   =========================================================================== */
+
+.grid {
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-w), 1fr));
+}
+
+/* List view: one row per instance, for people who want names over pictures. */
+.instance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.instance-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  min-height: 52px;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.instance-row:hover {
+  background: var(--fill);
+}
+
+.instance-row__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  background: var(--fill);
+  flex: none;
+  overflow: hidden;
+}
+
+.instance-row__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.instance-row__name {
+  font-size: var(--fs-label);
+  font-weight: 600;
+}
+
+.instance-row__meta {
+  font-size: var(--fs-caption);
+  color: var(--ink-3);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 1px;
+}
+
+/* Custom icon images inside the grid card. */
+.card__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.card__icon--image {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   Theme picker
+   =========================================================================== */
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.theme-card {
+  position: relative;
+  padding: 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  background: transparent;
+  text-align: left;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-glass);
+}
+
+.theme-card:hover {
+  transform: translateY(-2px);
+}
+
+.theme-card[data-active='true'] {
+  border-color: var(--accent);
+}
+
+.theme-card__swatch {
+  height: 64px;
+  position: relative;
+}
+
+/* A miniature of the real backdrop, so the preview shows what the glass will
+   actually have to refract rather than a flat colour chip. */
+.theme-card__chip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 62%;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(6px) saturate(180%);
+  backdrop-filter: blur(6px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.theme-card__label {
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+}
+
+.theme-card__name {
+  font-size: var(--fs-label);
+  font-weight: 640;
+}
+
+.theme-card__desc {
+  font-size: var(--fs-caption);
+  color: var(--ink-3);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* ===========================================================================
+   Icon picker
+   =========================================================================== */
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: var(--sp-2);
+  max-height: 210px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.icon-choice {
+  aspect-ratio: 1;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--fill);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-glass);
+}
+
+.icon-choice:hover {
+  transform: scale(1.06);
+}
+
+.icon-choice[data-active='true'] {
+  border: 2px solid var(--accent);
+  background: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.12);
+}
+
+.icon-choice img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A drop target for dragging an image straight onto the picker. */
+.icon-drop {
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--ink-3);
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.icon-drop[data-over='true'] {
+  border-color: var(--accent);
+  background: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.1);
+  color: var(--ink);
+}

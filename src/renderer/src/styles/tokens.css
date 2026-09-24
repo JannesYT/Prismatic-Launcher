@@ -1,0 +1,165 @@
+/* ===========================================================================
+   Design tokens.
+
+   Everything downstream reads from here, which is what lets a single
+   `data-glass` attribute flip the whole app between Liquid Glass, tinted and
+   solid without touching a line of component code.
+   =========================================================================== */
+
+:root {
+  /* --- Accent ------------------------------------------------------------ */
+  --accent: #5b8cff;
+  --accent-ink: #ffffff;
+  /* Derived channels, set from JS so we can build rgba() from the accent. */
+  --accent-r: 91;
+  --accent-g: 140;
+  --accent-b: 255;
+
+  /* --- Radii. Concentric: a child's radius is the parent's minus its inset. */
+  --r-window: 14px;
+  --r-xl: 26px;
+  --r-lg: 20px;
+  --r-md: 14px;
+  --r-sm: 10px;
+  --r-pill: 999px;
+
+  /* --- Spacing ---------------------------------------------------------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 22px;
+  --sp-6: 30px;
+  --sp-7: 40px;
+
+  /* --- Typography ------------------------------------------------------- */
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI',
+    system-ui, 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Cascadia Code', 'SF Mono', 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --fs-display: 30px;
+  --fs-title: 21px;
+  --fs-heading: 16px;
+  --fs-body: 14px;
+  --fs-label: 13px;
+  --fs-caption: 11.5px;
+
+  /* --- Motion -----------------------------------------------------------
+     `--motion` is a global multiplier the user controls. Every duration is
+     expressed through it, so Reduce Motion can set it to 0 in one place while
+     the easing curves stay intact for anything that still animates. */
+  --motion: 1;
+  --dur-instant: calc(90ms * var(--motion));
+  --dur-fast: calc(160ms * var(--motion));
+  --dur-base: calc(260ms * var(--motion));
+  --dur-slow: calc(420ms * var(--motion));
+  /* Apple's fluid feel comes from a slight overshoot on entry. */
+  --ease-glass: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0.05, 0.36, 1);
+
+  /* --- Elevation --------------------------------------------------------- */
+  --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.1), 0 8px 28px -6px rgba(0, 0, 0, 0.22);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.14), 0 18px 48px -12px rgba(0, 0, 0, 0.36);
+  --shadow-bar: 0 -1px 1px rgba(0, 0, 0, 0.04), 0 12px 40px -8px rgba(0, 0, 0, 0.3);
+
+  /* --- Layout ------------------------------------------------------------ */
+  --titlebar-h: 44px;
+  --tabbar-h: 64px;
+  --tabbar-inset: 16px;
+  --content-max: 1180px;
+}
+
+/* --- Light scheme --------------------------------------------------------- */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --ink: #10131a;
+  --ink-2: #3d4453;
+  --ink-3: #6b7382;
+  --ink-4: #99a1b0;
+  --line: rgba(16, 19, 26, 0.1);
+  --line-strong: rgba(16, 19, 26, 0.18);
+
+  /* The page behind the glass. Two soft colour fields give the material
+     something worth refracting — glass over flat grey looks dead. */
+  --bg: #eef1f6;
+  --bg-tint-a: rgba(91, 140, 255, 0.16);
+  --bg-tint-b: rgba(255, 122, 182, 0.12);
+  --bg-tint-c: rgba(64, 214, 190, 0.1);
+
+  --fill: rgba(16, 19, 26, 0.05);
+  --fill-hover: rgba(16, 19, 26, 0.08);
+  --fill-active: rgba(16, 19, 26, 0.12);
+
+  --ok: #1a8f5c;
+  --warn: #b57b00;
+  --bad: #cf3b3b;
+}
+
+/* --- Dark scheme ---------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --ink: #f1f3f8;
+    --ink-2: #c3c9d6;
+    --ink-3: #8f97a8;
+    --ink-4: #646c7c;
+    --line: rgba(255, 255, 255, 0.11);
+    --line-strong: rgba(255, 255, 255, 0.2);
+
+    --bg: #0a0c11;
+    --bg-tint-a: rgba(72, 116, 255, 0.24);
+    --bg-tint-b: rgba(198, 70, 160, 0.18);
+    --bg-tint-c: rgba(32, 168, 150, 0.14);
+
+    --fill: rgba(255, 255, 255, 0.06);
+    --fill-hover: rgba(255, 255, 255, 0.1);
+    --fill-active: rgba(255, 255, 255, 0.15);
+
+    --ok: #43d68f;
+    --warn: #ffc857;
+    --bad: #ff6b6b;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --ink: #f1f3f8;
+  --ink-2: #c3c9d6;
+  --ink-3: #8f97a8;
+  --ink-4: #646c7c;
+  --line: rgba(255, 255, 255, 0.11);
+  --line-strong: rgba(255, 255, 255, 0.2);
+
+  --bg: #0a0c11;
+  --bg-tint-a: rgba(72, 116, 255, 0.24);
+  --bg-tint-b: rgba(198, 70, 160, 0.18);
+  --bg-tint-c: rgba(32, 168, 150, 0.14);
+
+  --fill: rgba(255, 255, 255, 0.06);
+  --fill-hover: rgba(255, 255, 255, 0.1);
+  --fill-active: rgba(255, 255, 255, 0.15);
+
+  --ok: #43d68f;
+  --warn: #ffc857;
+  --bad: #ff6b6b;
+}
+
+/* --- Increased contrast --------------------------------------------------
+   Apple's guidance: define a custom colour with light and dark variants *and*
+   an increased-contrast option for each. */
+:root[data-contrast='high'] {
+  --ink-3: var(--ink-2);
+  --ink-4: var(--ink-3);
+  --line: rgba(16, 19, 26, 0.3);
+  --line-strong: rgba(16, 19, 26, 0.5);
+}
+
+:root[data-contrast='high'][data-theme='dark'],
+:root[data-contrast='high'][data-theme='system'] {
+  --line: rgba(255, 255, 255, 0.34);
+  --line-strong: rgba(255, 255, 255, 0.58);
+}

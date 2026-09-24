@@ -1,0 +1,387 @@
+/* ===========================================================================
+   The Liquid Glass material.
+
+   Three styles, one set of animations. This is the whole point of the design:
+   `data-glass` changes what a surface is *made of*; it never changes how a
+   surface *moves*. Every transition, spring and morph below is defined outside
+   the style blocks, so turning glass off leaves the motion identical.
+
+     data-glass="liquid"  full material: blur, lensing, specular rim, shadow
+     data-glass="tinted"  flat translucent tint, no blur, no refraction
+     data-glass="solid"   opaque surface, for Reduce Transparency or low-end GPUs
+   =========================================================================== */
+
+/* --- Material variables per style ----------------------------------------- */
+
+:root {
+  /* Knobs the settings sliders write into. */
+  --glass-blur-scale: 0.7; /* 0–1 from the Blur slider */
+  --glass-lens-scale: 0.62; /* 0–1 from the Lensing slider */
+  --glass-specular-scale: 0.55; /* 0–1 from the Specular slider */
+
+  --glass-blur: calc(26px * var(--glass-blur-scale));
+  --glass-saturate: 175%;
+  --glass-brightness: 1.05;
+}
+
+/* Liquid — the real material ------------------------------------------------ */
+:root[data-glass='liquid'] {
+  --glass-bg: rgba(255, 255, 255, 0.44);
+  --glass-bg-hover: rgba(255, 255, 255, 0.58);
+  --glass-bg-active: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-rim-top: rgba(255, 255, 255, calc(0.85 * var(--glass-specular-scale)));
+  --glass-rim-bottom: rgba(255, 255, 255, calc(0.18 * var(--glass-specular-scale)));
+  --glass-inner-glow: rgba(255, 255, 255, calc(0.5 * var(--glass-specular-scale)));
+  --glass-shadow: var(--shadow-float);
+  --glass-backdrop: blur(var(--glass-blur)) saturate(var(--glass-saturate))
+    brightness(var(--glass-brightness));
+  --glass-lens-opacity: 1;
+}
+
+/* The "clear" variant: highly transparent, so it needs a dimming scrim behind
+   any text that sits on it. Apple's two variants, regular and clear. */
+:root[data-glass='liquid'][data-glass-variant='clear'] {
+  --glass-bg: rgba(255, 255, 255, 0.16);
+  --glass-bg-hover: rgba(255, 255, 255, 0.26);
+  --glass-bg-active: rgba(255, 255, 255, 0.34);
+  --glass-border: rgba(255, 255, 255, 0.34);
+  --glass-blur: calc(14px * var(--glass-blur-scale));
+  --glass-saturate: 200%;
+}
+
+/* Tinted — no blur, no lensing, same everything else ----------------------- */
+:root[data-glass='tinted'] {
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-hover: rgba(255, 255, 255, 0.82);
+  --glass-bg-active: rgba(255, 255, 255, 0.9);
+  --glass-border: var(--line);
+  --glass-rim-top: rgba(255, 255, 255, calc(0.6 * var(--glass-specular-scale)));
+  --glass-rim-bottom: transparent;
+  --glass-inner-glow: transparent;
+  --glass-shadow: var(--shadow-float);
+  --glass-backdrop: none;
+  --glass-lens-opacity: 0;
+}
+
+/* Solid — fully opaque ----------------------------------------------------- */
+:root[data-glass='solid'] {
+  --glass-bg: #ffffff;
+  --glass-bg-hover: #f6f8fc;
+  --glass-bg-active: #eef1f7;
+  --glass-border: var(--line);
+  --glass-rim-top: transparent;
+  --glass-rim-bottom: transparent;
+  --glass-inner-glow: transparent;
+  --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 6px 20px -8px rgba(0, 0, 0, 0.16);
+  --glass-backdrop: none;
+  --glass-lens-opacity: 0;
+}
+
+/* Dark-scheme material values ---------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light'])[data-glass='liquid'] {
+    --glass-bg: rgba(28, 32, 42, 0.5);
+    --glass-bg-hover: rgba(40, 45, 58, 0.62);
+    --glass-bg-active: rgba(52, 58, 74, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.16);
+    --glass-rim-top: rgba(255, 255, 255, calc(0.4 * var(--glass-specular-scale)));
+    --glass-rim-bottom: rgba(255, 255, 255, calc(0.06 * var(--glass-specular-scale)));
+    --glass-inner-glow: rgba(255, 255, 255, calc(0.16 * var(--glass-specular-scale)));
+    --glass-brightness: 1.18;
+  }
+  :root:not([data-theme='light'])[data-glass='liquid'][data-glass-variant='clear'] {
+    --glass-bg: rgba(20, 24, 32, 0.24);
+    --glass-bg-hover: rgba(30, 35, 46, 0.36);
+    --glass-bg-active: rgba(42, 48, 62, 0.46);
+  }
+  :root:not([data-theme='light'])[data-glass='tinted'] {
+    --glass-bg: rgba(24, 28, 37, 0.86);
+    --glass-bg-hover: rgba(34, 39, 50, 0.92);
+    --glass-bg-active: rgba(44, 50, 64, 0.96);
+    --glass-rim-top: rgba(255, 255, 255, calc(0.22 * var(--glass-specular-scale)));
+  }
+  :root:not([data-theme='light'])[data-glass='solid'] {
+    --glass-bg: #14181f;
+    --glass-bg-hover: #1b2028;
+    --glass-bg-active: #232935;
+  }
+}
+
+/* Explicit dark theme (duplicated because :root can't inherit a media block) */
+:root[data-theme='dark'][data-glass='liquid'] {
+  --glass-bg: rgba(28, 32, 42, 0.5);
+  --glass-bg-hover: rgba(40, 45, 58, 0.62);
+  --glass-bg-active: rgba(52, 58, 74, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-rim-top: rgba(255, 255, 255, calc(0.4 * var(--glass-specular-scale)));
+  --glass-rim-bottom: rgba(255, 255, 255, calc(0.06 * var(--glass-specular-scale)));
+  --glass-inner-glow: rgba(255, 255, 255, calc(0.16 * var(--glass-specular-scale)));
+  --glass-brightness: 1.18;
+}
+:root[data-theme='dark'][data-glass='liquid'][data-glass-variant='clear'] {
+  --glass-bg: rgba(20, 24, 32, 0.24);
+  --glass-bg-hover: rgba(30, 35, 46, 0.36);
+  --glass-bg-active: rgba(42, 48, 62, 0.46);
+}
+:root[data-theme='dark'][data-glass='tinted'] {
+  --glass-bg: rgba(24, 28, 37, 0.86);
+  --glass-bg-hover: rgba(34, 39, 50, 0.92);
+  --glass-bg-active: rgba(44, 50, 64, 0.96);
+  --glass-rim-top: rgba(255, 255, 255, calc(0.22 * var(--glass-specular-scale)));
+}
+:root[data-theme='dark'][data-glass='solid'] {
+  --glass-bg: #14181f;
+  --glass-bg-hover: #1b2028;
+  --glass-bg-active: #232935;
+}
+
+/* ===========================================================================
+   The .glass surface
+   =========================================================================== */
+
+.glass {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--r, var(--r-lg));
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--glass-shadow);
+  color: var(--ink);
+
+  /* The one transition every style shares. Changing material never changes
+     timing, so toggling Liquid Glass off is invisible in motion terms. */
+  transition:
+    background var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-glass),
+    -webkit-backdrop-filter var(--dur-base) var(--ease-out),
+    backdrop-filter var(--dur-base) var(--ease-out);
+}
+
+/* --- Specular rim ---------------------------------------------------------
+   A 1px gradient border, bright at the top-left and fading away, drawn with a
+   masked pseudo-element so it follows any border radius. This is the single
+   detail that most makes a surface read as glass rather than as a grey box. */
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    145deg,
+    var(--glass-rim-top) 0%,
+    transparent 38%,
+    transparent 62%,
+    var(--glass-rim-bottom) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+  transition: background var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+}
+
+/* --- Inner glow + lensing ------------------------------------------------
+   `filter: url(#lens)` applies an feDisplacementMap driven by fractal noise,
+   which bends whatever shows through the surface. Scale is bound to the
+   Lensing slider and drops to 0 in tinted/solid. */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 100% at 18% 0%,
+    var(--glass-inner-glow) 0%,
+    transparent 55%
+  );
+  opacity: var(--glass-lens-opacity);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+/* Only the full material pays for the SVG filter. */
+:root[data-glass='liquid'] .glass.glass--lensed {
+  -webkit-backdrop-filter: var(--glass-backdrop) url(#prismatic-lens);
+  backdrop-filter: var(--glass-backdrop) url(#prismatic-lens);
+}
+
+/* --- Interactive surfaces ------------------------------------------------- */
+.glass--interactive {
+  cursor: pointer;
+  border: none;
+  font: inherit;
+  color: inherit;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.glass--interactive:hover {
+  background: var(--glass-bg-hover);
+}
+
+.glass--interactive:active {
+  background: var(--glass-bg-active);
+  /* Controls "come to life" under the finger — a small squash, not a jump. */
+  transform: scale(0.975);
+  transition-duration: var(--dur-instant);
+}
+
+.glass--interactive:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Prominent (accent-filled) glass ------------------------------------- */
+.glass--prominent {
+  background: linear-gradient(
+    150deg,
+    rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.95),
+    rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.78)
+  );
+  color: var(--accent-ink);
+  box-shadow:
+    var(--glass-shadow),
+    0 6px 24px -6px rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.55);
+}
+.glass--prominent:hover {
+  background: linear-gradient(
+    150deg,
+    rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1),
+    rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.88)
+  );
+}
+.glass--prominent::before {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.6) 0%, transparent 45%);
+}
+
+/* --- Nesting guard -------------------------------------------------------
+   Apple: "avoid overcrowding or layering Liquid Glass elements on top of each
+   other." A glass surface inside another one drops its blur and shadow and
+   becomes a plain fill, so the material never doubles up. */
+.glass .glass:not(.glass--allow-nested) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  background: var(--fill);
+}
+.glass .glass:not(.glass--allow-nested):hover {
+  background: var(--fill-hover);
+}
+.glass .glass:not(.glass--allow-nested)::after {
+  opacity: 0;
+}
+
+/* ===========================================================================
+   Glass container — morphing between sibling surfaces
+   Apple's GlassEffectContainer: group glass shapes so they can fluidly merge.
+   =========================================================================== */
+
+.glass-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--r-pill);
+  /* Concentric: children sit at (parent radius - padding). */
+}
+
+.glass-container > * {
+  border-radius: calc(var(--r-pill) - 4px);
+}
+
+/* A toolbar spacer, so grouped items read as separate clusters. */
+.glass-spacer {
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 6px;
+  background: var(--line);
+  flex: none;
+}
+
+/* ===========================================================================
+   Scroll edge effect
+   "Scroll views offer a scroll edge effect that helps maintain sufficient
+   legibility and contrast for controls by obscuring content that scrolls
+   beneath them." Implemented as a masked blur strip pinned to the edges.
+   =========================================================================== */
+
+.scroll-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 56px;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.scroll-edge[data-visible='true'] {
+  opacity: 1;
+}
+
+.scroll-edge--top {
+  top: 0;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+}
+
+.scroll-edge--bottom {
+  bottom: 0;
+  height: calc(var(--tabbar-h) + var(--tabbar-inset) * 2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+}
+
+:root[data-glass='solid'] .scroll-edge {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: linear-gradient(to top, var(--bg) 25%, transparent 100%);
+}
+
+/* ===========================================================================
+   Accessibility
+   =========================================================================== */
+
+/* Reduce Transparency removes the material but keeps the layout and motion. */
+:root[data-reduce-transparency='true'] .glass,
+:root[data-reduce-transparency='true'] .scroll-edge {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Reduce Motion: zero out the multiplier rather than killing transitions, so
+   state changes still apply — they just arrive immediately. */
+:root[data-reduce-motion='true'] {
+  --motion: 0.001;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion-override='true']) {
+    --motion: 0.001;
+  }
+}
+
+/* Honour the OS setting as a floor, not a ceiling. */
+@media (prefers-reduced-transparency: reduce) {
+  :root:not([data-glass='solid']) .glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
